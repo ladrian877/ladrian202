@@ -28,7 +28,7 @@ class PerformanceAnalyzer:
         unoptimized = 0
         missing_lazy = 0
         for img in images:
-            src = (img.get("src") or "").lower()
+            src = str(img.get("src") or "").lower()
             if any(src.endswith(ext) for ext in _HEAVY_IMG) and not any(
                 src.endswith(m) for m in _MODERN_IMG
             ):

@@ -94,8 +94,9 @@ def build_report_findings(
 ) -> ReportFindings:
     """Construye las conclusiones estructuradas a partir de los datos."""
     problems: list[str] = []
-    if score_breakdown and isinstance(score_breakdown.get("problems"), list):
-        problems = [str(p) for p in score_breakdown["problems"]]  # type: ignore[index]
+    raw_problems = score_breakdown.get("problems") if score_breakdown else None
+    if isinstance(raw_problems, list):
+        problems = [str(p) for p in raw_problems]
 
     findings = ReportFindings(priority=priority)
 

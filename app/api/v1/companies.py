@@ -7,16 +7,18 @@ la exportación se añade en la fase 6.)
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query, status
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_places_provider
-from app.core.errors import NotFoundError
+from app.core.errors import NotFoundError, ValidationError
 from app.models.company import Company
 from app.repositories.company_repository import CompanyFilter, CompanyRepository
 from app.schemas.common import Page, PaginationParams
 from app.schemas.company import CompanyRead, SearchRequest, SearchResponse
 from app.schemas.scoring import ScoreRead
 from app.scrapers.interfaces import PlacesProvider
+from app.services.export_service import EXPORT_FORMATS, ExportService
 from app.services.prospection_service import ProspectionService
 
 router = APIRouter(prefix="/companies", tags=["companies"])
@@ -76,12 +78,51 @@ def list_companies(
         has_website=has_website,
     )
     repo = CompanyRepository(session)
-    items, total = repo.list(filters, offset=pagination.offset, limit=pagination.limit)
+    items, total = repo.list_paginated(filters, offset=pagination.offset, limit=pagination.limit)
     return Page[CompanyRead](
         items=[_to_read(c) for c in items],
         total=total,
         page=pagination.page,
         page_size=pagination.page_size,
+    )
+
+
+@router.get("/export")
+def export_companies(
+    session: Session = Depends(get_db),
+    export_format: str = Query(default="csv", alias="format", pattern="^(csv|xlsx|json)$"),
+    city: str | None = Query(default=None),
+    category: str | None = Query(default=None),
+    min_score: int | None = Query(default=None, ge=0, le=100),
+    max_score: int | None = Query(default=None, ge=0, le=100),
+    has_website: bool | None = Query(default=None),
+) -> Response:
+    """Exporta las empresas filtradas a CSV, Excel o JSON."""
+    if export_format not in EXPORT_FORMATS:
+        raise ValidationError(f"Formato no soportado: {export_format}")
+
+    filters = CompanyFilter(
+        city=city,
+        category=category,
+        min_score=min_score,
+        max_score=max_score,
+        has_website=has_website,
+    )
+    companies = CompanyRepository(session).iter_all_filtered(filters)
+
+    service = ExportService()
+    media_type, extension = EXPORT_FORMATS[export_format]
+    renderers = {
+        "csv": service.to_csv,
+        "xlsx": service.to_xlsx,
+        "json": service.to_json,
+    }
+    content = renderers[export_format](companies)
+    filename = f"empresas.{extension}"
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 

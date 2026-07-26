@@ -88,7 +88,7 @@ class CompanyRepository(BaseRepository[Company]):
         ).subquery()
         return select(ranked.c.company_id, ranked.c.score).where(ranked.c.rn == 1).subquery()
 
-    def list(
+    def list_paginated(
         self,
         filters: CompanyFilter,
         *,

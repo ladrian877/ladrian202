@@ -52,7 +52,7 @@ class LinksAnalyzer:
         urls: list[str] = []
         seen: set[str] = set()
         for anchor in context.soup.find_all("a", href=True):
-            href = anchor["href"].strip()
+            href = str(anchor["href"]).strip()
             if not href or href.startswith(("#", "mailto:", "tel:", "javascript:")):
                 continue
             absolute = urljoin(context.base_url, href)

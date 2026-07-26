@@ -27,7 +27,7 @@ class SocialAnalyzer:
     name = "social"
 
     async def analyze(self, context: AnalysisContext) -> dict[str, Any]:
-        links = [a.get("href", "") for a in context.soup.find_all("a", href=True)]
+        links = [str(a.get("href", "")) for a in context.soup.find_all("a", href=True)]
         joined = " ".join(links).lower()
         html = context.html.lower()
 
