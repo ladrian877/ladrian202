@@ -11,9 +11,16 @@ from fastapi import Request
 
 from app.config import Settings, get_settings
 from app.database.session import get_db
+from app.scrapers.google_places import build_places_provider
+from app.scrapers.interfaces import PlacesProvider
 from app.tasks.interfaces import TaskRunner
 
-__all__ = ["get_db", "get_settings_dep", "get_task_runner"]
+__all__ = [
+    "get_db",
+    "get_settings_dep",
+    "get_task_runner",
+    "get_places_provider",
+]
 
 
 def get_settings_dep() -> Settings:
@@ -25,3 +32,8 @@ def get_task_runner(request: Request) -> TaskRunner:
     """Devuelve el ``TaskRunner`` almacenado en el estado de la aplicación."""
     runner: TaskRunner = request.app.state.task_runner
     return runner
+
+
+def get_places_provider() -> PlacesProvider:
+    """Provee el proveedor de búsqueda de empresas (real o fake según config)."""
+    return build_places_provider()
