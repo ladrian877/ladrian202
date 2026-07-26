@@ -45,6 +45,7 @@ class CompanyRead(CompanyBase):
     source: str
     created_at: datetime
     latest_score: int | None = None
+    latest_priority: str | None = None
 
 
 class SearchResponse(BaseModel):

@@ -1,0 +1,20 @@
+{
+  "version": "custom-v1",
+  "weights": {
+    "no_website": 40,
+    "no_https": 8,
+    "not_responsive": 10,
+    "poor_performance": 10,
+    "poor_seo": 12,
+    "no_social_media": 8,
+    "no_contact_form": 6,
+    "no_analytics": 8,
+    "no_blog": 4,
+    "unoptimized_images": 5,
+    "broken_links": 5
+  },
+  "priority_thresholds": {
+    "high": 70,
+    "medium": 40
+  }
+}

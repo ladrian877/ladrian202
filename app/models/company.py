@@ -79,7 +79,7 @@ class Company(Base, TimestampMixin):
         return self.analyses[0] if self.analyses else None
 
     @property
-    def latest_score(self) -> LeadScore | None:
+    def most_recent_score(self) -> LeadScore | None:
         """Última puntuación calculada, si existe."""
         return self.scores[0] if self.scores else None
 

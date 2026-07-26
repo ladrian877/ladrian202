@@ -15,6 +15,7 @@ from app.models.company import Company
 from app.repositories.company_repository import CompanyFilter, CompanyRepository
 from app.schemas.common import Page, PaginationParams
 from app.schemas.company import CompanyRead, SearchRequest, SearchResponse
+from app.schemas.scoring import ScoreRead
 from app.scrapers.interfaces import PlacesProvider
 from app.services.prospection_service import ProspectionService
 
@@ -23,9 +24,10 @@ router = APIRouter(prefix="/companies", tags=["companies"])
 
 def _to_read(company: Company) -> CompanyRead:
     """Serializa una empresa incluyendo su último score si existe."""
-    latest = company.latest_score
+    latest = company.most_recent_score
     data = CompanyRead.model_validate(company)
     data.latest_score = latest.score if latest else None
+    data.latest_priority = latest.priority if latest else None
     return data
 
 
@@ -94,3 +96,16 @@ def get_company(
     if company is None:
         raise NotFoundError(f"No existe la empresa {company_id}")
     return _to_read(company)
+
+
+@router.get("/{company_id}/scores", response_model=list[ScoreRead])
+def get_company_scores(
+    company_id: int,
+    session: Session = Depends(get_db),
+) -> list[ScoreRead]:
+    """Devuelve el historial de puntuaciones de una empresa (más reciente primero)."""
+    repo = CompanyRepository(session)
+    company = repo.get_with_relations(company_id)
+    if company is None:
+        raise NotFoundError(f"No existe la empresa {company_id}")
+    return [ScoreRead.model_validate(s) for s in company.scores]
