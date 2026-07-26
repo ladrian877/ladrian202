@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from fastapi import Request
 
+from app.ai.factory import build_llm_provider
+from app.ai.interfaces import LLMProvider
 from app.config import Settings, get_settings
 from app.database.session import get_db
 from app.scrapers.google_places import build_places_provider
@@ -20,6 +22,7 @@ __all__ = [
     "get_settings_dep",
     "get_task_runner",
     "get_places_provider",
+    "get_llm_provider",
 ]
 
 
@@ -37,3 +40,8 @@ def get_task_runner(request: Request) -> TaskRunner:
 def get_places_provider() -> PlacesProvider:
     """Provee el proveedor de búsqueda de empresas (real o fake según config)."""
     return build_places_provider()
+
+
+def get_llm_provider() -> LLMProvider:
+    """Provee el proveedor de IA (OpenAI o nulo determinista según config)."""
+    return build_llm_provider()
